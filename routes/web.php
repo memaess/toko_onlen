@@ -15,4 +15,26 @@ Route::get('/', 'BaseController@index');
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::group(['middleware' => ['auth']], function () {
+	Route::group(['prefix' => 'Administrator'], function () {
+		Route::group(['middleware' => ['role:Administrator']], function () {
+			Route::get('/', 'Admin\MainController@index')->name('admin.index');
+		});
+	}); 
+});
+
+Route::group(['middleware' => ['auth']], function () {
+	Route::group(['prefix' => 'Employee'], function () {
+		Route::group(['middleware' => ['role:Employee']], function () {
+			Route::get('/', 'Employee\MainController@index')->name('employee.index');
+		});
+	}); 
+});
+
+Route::group(['middleware' => ['auth']], function () {
+	Route::group(['prefix' => 'Owner'], function () {
+		Route::group(['middleware' => ['role:Owner']], function () {
+			Route::get('/', 'Owner\MainController@index')->name('owner.index');
+		});
+	}); 
+});

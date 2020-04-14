@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\User;
 
 class LoginController extends Controller
 {
@@ -27,7 +29,6 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
 
     /**
      * Create a new controller instance.
@@ -41,6 +42,9 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
+        $email = $request->email;
+        $password = $request->password;
+
         $this->validate($request, [
             'email' => 'required|string|email',
             'password' => 'required|string'
@@ -51,9 +55,18 @@ class LoginController extends Controller
            if ($attempt) {
                 $user = User::where('email', '=', $email)->firstOrFail();
                 Auth::login($user, TRUE);
-                if ($user->roles()->first->name == 'Administrator'){
+                if ($user->roles->first()->name == 'Administrator'){
                     return redirect(route('admin.index'));
+                } elseif ($user->roles->first()->name == 'Employee') {
+                    return redirect(route('employee.index'));
+                } elseif ($user->roles->first()->name == 'Owner') {
+                    return redirect(route('owner.index'));
+                } elseif ($user->roles->first()->name == 'Buyer') {
+                    return redirect(route('buyer.index'));
                 }
+           } else {
+               session()->flash('danger', 'Email / Password yang anda masukkan salah !');
+               return redirect()->back();
            }
         } catch (Exception $e) {
             echo "error";
