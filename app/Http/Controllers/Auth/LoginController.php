@@ -40,6 +40,22 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        
+        $this->validate($request, [
+            'email' => 'required|string|email',
+            'password' => 'required|string'
+        ]);
+
+        try {
+           $attempt = Auth::attempt(['email' => $email, 'password' => $password]);
+           if ($attempt) {
+                $user = User::where('email', '=', $email)->firstOrFail();
+                Auth::login($user, TRUE);
+                if ($user->roles()->first->name == 'Administrator'){
+                    return redirect(route('admin.index'));
+                }
+           }
+        } catch (Exception $e) {
+            echo "error";
+        }
     }
 }
